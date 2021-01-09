@@ -44,7 +44,7 @@ def read_csv(filename):
 def write_json(filename):
     #
     data_dict = {"sandbox-installs": read_csv(filename)}
-    json_file_handler = open_file("data/sandbox.json", "w")
+    json_file_handler = open_file("output/sandbox.json", "w")
     # exception handling for writing json file
     try:
         json_file_handler.write(json.dumps(data_dict, indent=4))
@@ -52,6 +52,7 @@ def write_json(filename):
         close_file_and_exit(json_file_handler, "Error while writing json data " + str(e))
 
     json_file_handler.close()
+    print("json file created at output/sandbox.json")
 
 
 # Generate a SQL insert statement for all rows in the CSV file
@@ -64,6 +65,8 @@ def sql_insert_statement(filename):
     except Exception as e:
         close_file_and_exit(insert_file_handler, "Error reading file as CSV " + str(e))
 
+    output_file_handler = open_file("output/sql_insert_queries.txt", "w")
+
     # skipping the header
     next(csv_rows)
     for row in csv_rows:
@@ -71,10 +74,11 @@ def sql_insert_statement(filename):
             if row[i] == "":
                 row[i] = "NULL"
 
-        print("INSERT INTO table_name VALUES %r;" % (tuple(row),))
-        # sys.exit(1)
+        msg = "INSERT INTO table_name VALUES %r;" % (tuple(row),)
+        output_file_handler.write(msg)
+    output_file_handler.close()
     insert_file_handler.close()
-    # close_file_and_exit(insert_file_handler, "Error reading file as CSV ")
+    print("SQL file created at output/sql_insert_queries.txt")
 
 
 def main():
@@ -95,10 +99,8 @@ def main():
         sys.exit(0)
     filename = sys.argv[1]
     write_json(filename)
-    print("Json file created")
     sql_insert_statement(filename)
-    csv_test_dict = read_csv(filename)
-    print(csv_test_dict)
+
 # Analysis module functions
     analysis.main_analysis(filename)
 
